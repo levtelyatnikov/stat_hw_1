@@ -61,10 +61,8 @@ for (j in 1:N){
   counter_2 = 0
   Player_1 = "RRR"
   Player_2 = "BRR"
-  deck <- sample(c(rep("R", 26) , rep("B", 26)))
-
+  deck <- sample(c(rep("R", 26) , rep("B", 26))) # permutation the deck 
   i =1
-  flag = 0
   while (i<=(n_cards-2)) {
     c = paste(deck[i:(i+2)],collapse='')
     
@@ -159,7 +157,7 @@ data.frame(row.names = c("Player 1 win","Draw","Player 2 win"),Percent)
 
 # Exercise 2: Randomize this. . .
 ### 1 
-Let's simulate the algoritm  1000 times and emphasize some interesting aspects 
+Let's simulate the algorithm 1000 times and emphasize some interesting aspects
 ```{r echo=FALSE}
 set.seed(23123)
 N = 20
@@ -193,7 +191,7 @@ for (n_ in 1:N){
   norm_X = sqrt(sum(X**2))
   norm_Y = sqrt(sum(Y**2))
   
-  print(abs(norm_X - norm_Y)/norm_Y)
+  #print(abs(norm_X - norm_Y)/norm_Y)
   
   if ((((1-e)*norm_X) <= norm_Y) && (norm_Y <= (norm_X*(1+e)))){
     suc_counter = suc_counter+1
@@ -204,19 +202,20 @@ P = c(n, d, p, suc_counter/N,doub_check)
 data.frame(row.names = c("Size of input", "Size 'd' of vector 'x'" , "Size 'p' of vector 'y'", "Actual Probability", "JL lemma probability"),P)
 ```
 
-We can see that if we are creating the matrix L(p x d) dimmensional every simulation we can achive the JL lemma results. 
-As we can see in the algoritm some parametr which we can tune: 
+We can see that if we are creating the matrix L(p x d) dimensional every simulation we can achieve the JL lemma results.
+As we can see in the algorithm some parameters which we can tune:
 
 - d - dimension of verctor X
 - epsilon
 - n - number of indexes
 - p - reduced dimension
+
 ```{r echo=FALSE}
 e = seq(from = 0.1, to = 1, by = 0.01 )
 p = floor(log(n)/e^2)
 ```
 ```{r  echo=FALSE, fig.cap="A caption", out.width = '100%'}
-plot(e,p,xlab = "Epsilon", ylab = "Size of p", main = "Dependece of p from epsilon with fixed n = 1000")
+plot(e,p,xlab = "Epsilon", ylab = "Size of 'p'", main = "Dependece of 'p' from 'Epsilon' with fixed n = 1000")
 ```
 
 Also we have to emphasize that dimension p count by the formul: $$log(n)/eps^2$$
@@ -227,7 +226,7 @@ p = 1000
 prob = (1-exp((-e**2)*p))
 ```
 ```{r  echo=FALSE, fig.cap="A caption", out.width = '100%'}
-plot(e,prob,xlab = "Epsilon", ylab = "Probability", main = "Dependece of Probability from Epsilon with fixed p = 1000")
+plot(e,prob,xlab = "Epsilon", ylab = "Probability", main = "Dependece of 'Probability' from Epsilon with fixed p = 1000")
 
 ```
 
@@ -236,8 +235,9 @@ So we can see that we have just two main parametrs (we suppose that in real life
 - epsilon
 - n - number of indexes
 
-As we can impact on the JL probability with help of n and epsilon where n inpact on through the formula for p
+As we can impact on the JL probability with help of n and epsilon where and impact on the formula for p
 So lets try to tune n and epsilon for some really huge vector X:
+
 ```{r echo=FALSE}
 set.seed(123)
 N = 1
@@ -314,7 +314,7 @@ for(q in 1:N_sim){
   norm_X = sqrt(sum(x**2))
   norm_Y = sqrt(sum(y**2))
   
-  print(abs(norm_X - norm_Y) / norm_Y)
+  #print(abs(norm_X - norm_Y) / norm_Y)
   
   if(((1-eps)*norm_X <= norm_Y) && (norm_Y <= ((1+eps) * norm_X))){
     prob_counter = prob_counter + 1
