@@ -18,10 +18,10 @@ n_cards = 52 # number of cards
 N = 10000 # number of simulation
 wdl = c(0,0,0) # win_draw_lose flag
 for (j in 1:N){
-  counter_1 = 0 # counter of the winning during the one round for player 1
-  counter_2 = 0 # counter of the winning during the one round for player 2
-  Player_1 = paste( sample(c("R","B"), size = 3, replace = T), collapse= '' ) # player 1  takes random cards
-  Player_2 = paste(sample(c("R","B"), size = 3, replace = T), collapse = '' ) # player 2  takes random cards
+  counter_1 = 0 # counter of the winning during the one round for Player 1
+  counter_2 = 0 # counter of the winning during the one round for Player 2
+  Player_1 = paste( sample(c("R","B"), size = 3, replace = T), collapse= '' ) # Player 1  takes random cards
+  Player_2 = paste(sample(c("R","B"), size = 3, replace = T), collapse = '' ) # Player 2  takes random cards
   deck <- sample(c(rep("R", 26) , rep("B", 26))) # creating the deck and shuffle it
   i =1 
 
@@ -47,7 +47,7 @@ for (j in 1:N){
 Percent = (wdl/N)*100
 data.frame(row.names = c("Player 1 win","Draw games","Player 2 win"),Percent)
 ```
-When player 1 and player 2 picks their sequences completely at random after 1000 simulations we can see that the result is fair, because the percent of winning player 1 and player 2 close to each other.
+When Player 1 and Player 2 picks their sequences completely at random after 1000 simulations we can see that the result is fair, because the percent of winning Player 1 and Player 2 close to each other.
 
 ### 2 Weird Strategy
 ```{r echo=FALSE}
@@ -59,8 +59,8 @@ wdl = c(0,0,0)
 for (j in 1:N){
   counter_1 = 0
   counter_2 = 0
-  Player_1 = "RRR"
-  Player_2 = "BRR"
+  Player_1 = "BRR"
+  Player_2 = "BBR"
   deck <- sample(c(rep("R", 26) , rep("B", 26)))
 
   i =1
@@ -87,26 +87,68 @@ for (j in 1:N){
 Percent  = (wdl/N)*100
 data.frame(row.names = c("Player 1 win","Draw","Player 2 win"),Percent)
 ```
-At this point players one choose the sequence of "RRR" cards after that he showed the sequence to the player 2 then player 2 choose his sequence (with algorithm which was described in the HW1). After 1000 simulations we can see that player 2 almost all time is winning. If we look carefully we at the sequence of the player 1 we can see that his sequence is very unlikely, but obviously this amazing statistics of winning rate player 2 not only because sequence of player 1. Now lets understand what is "weird strategy" and why does it work: 
+At this point players one choose the sequence of "BRR" cards after that he showed the sequence to the Player 2 then Player 2 choose his sequence (with algorithm which was described in the HW1). After 1000 simulations we can see that Player 2 almost all time is winning. If we look carefully we at the sequence of the Player 1 we can see that his sequence is very unlikely, but obviously this amazing statistics of winning rate Player 2 not only because sequence of Player 1. 
+
+Let's prove for this particular case that Player 2 always win. Since it's hard to prove for 52 cards let's simplify and assume that we have infinite deck. Now, let event E be that the sequence BBR precede the sequence BRR. 
+![The case when we have infinite deck](p_img.jpg)
+As we can see, the probability of BBR first is ~ 0.667, thus we can conclude that Player 2 has more chances to win.
+Let's check this result by simulation picking number of cards equal 10000 (just 1 game). 
+```{r echo=FALSE}
+set.seed(123)
+
+n_cards = 10000
+N = 1
+
+counter_1 = 0
+counter_2 = 0
+Player_1 = "BRR"
+Player_2 = "BBR"
+deck <- sample(c(rep("R", n_cards / 2) , rep("B", n_cards / 2)))
+
+i =1
+flag = 0
+while (i<=(n_cards-2)) {
+  c = paste(deck[i:(i+2)],collapse='')
+  
+  if (all(Player_1 == c)) {
+    counter_1 = counter_1 + 1
+    i = i + 2  # jump
+  }
+  
+  if (all(Player_2 == c)) {
+    counter_2 = counter_2 + 1
+    i = i + 2 # jump
+  }
+  
+  i = i + 1
+}
+all_points = counter_1 + counter_2
+Percent  = c(counter_1 / all_points, counter_2 / all_points)
+data.frame(row.names = c("Player 1","Player 2"), Percent)
+```
+
+
+Now lets understand what is "weird strategy" and why does it work: 
 
 - Player 1 choose his sequence and show it to the oponent.
-- Player 2 takes the middle card, change it to the opposite colour and chose this colour as his first card in this case $$R \rightarrow\bar B$$
-- Then player 2 takes first and second card of the player 1 and chooses this colours as second and third card consequently (in this case "R" - first, "R" - second and all sequence "BRR").
+- Player 2 takes the middle card, change it to the opposite colour and chose this colour as his first card in this case $$R \rightarrow B$$
+- Then Player 2 takes first and second card of the Player 1 and chooses this colours as second and third card consequently (in this case "R" - first, "R" - second and all sequence "BRR").
 
-And now we can understand rhy does it work: Player 1 has his sequence of card $$P1 = C_1C_2C_3$$
+And now we can understand why it works: Player 1 has his sequence of card $$P1 = C_1C_2C_3$$
 
-Hence player 2 has $$P2 = \bar C_2C_1C_2$$
+Hence Player 2 has $$P2 = \bar C_2C_1C_2$$
 
-To better explaining this strategy we need to think about the deck and how cards following one after one. For exaple lets imagine that last two card which was taken from the deck are $$...C_1C_2$$
-It is the right beginning and middle cards of the player 1 sequence but also it is middle and last cards for the player 2 which means that player 2 is one step forward then player 1. We can consider that player 2 more likely to win at this case because he has a chance to win at this step while player 1 need to wait for the next card from the deck to have a chance to win.
+To better explaining this strategy we need to think about the deck and how cards following one after one. For example let's imagine that last two card taken from the deck are $$...C_1C_2$$
+It is the right beginning and middle cards of the Player 1 sequence but also it is middle and last cards for the Player 2 which means that Player 2 is one step forward then Player 1. We can consider that Player 2 more likely to win at this case because he has a chance to win at this step while Player 1 need to wait for the next card from the deck to have a chance to win.
 
-##### Theory of the stratagy (why does player 2 take middle card?)
-If we look at the sequence of the player 2 $$\bar C_2C_1C_2$$
-We can see when player 2 always will have different card on the left and right sides.It has just two ways
+##### Theory of the stratagy (why does Player 2 take middle card?)
+If we look at the sequence of the Player 2 $$\bar C_2C_1C_2$$
+We can see when Player 2 always will have different card on the left and right sides.It has just two ways
 $$RC_1B$$
 or $$BC_1R$$
 
-We suppose that in this way player 2 tries to maintain the balance in the deck, in other words player, 2 tries to keep the same probability for red and black cards to be picked.
+We suppose that in this way Player 2 tries to maintain the balance in the deck. When players win, they remove cards from deck, so in order to win more the presence of cards is needed. If Player 2 had the same two colors, for example R, he would consume twice Red cards, thus in the future it would be harder to win because of shortage of red cards.     
+
 
 ### 3 General Situation
 Now we are going to show the result of 1000 simulations when Player 1, every game, change the sequence of his cards hence Player 2 change it too according his/her strategy.
@@ -166,7 +208,7 @@ N = 20
 n = 1000 # time steps
 d = 2000
 
-e = 0.1 # [0,1]эe 
+e = 0.1 # [0,1] 
 p = floor(log(n)/e^2)
 
 doub_check = 1 - exp(-(e**2)*p)
