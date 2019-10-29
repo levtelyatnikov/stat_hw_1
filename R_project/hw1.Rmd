@@ -1,0 +1,329 @@
+---
+title: "HW1"
+author: "G38?"
+date: "10/26/2019"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# Exercise 1: So unfair to go first. . .
+### 1 Fair Game
+```{r echo=FALSE}
+# 1
+set.seed(789)
+n_cards = 52 # number of cards
+N = 10000 # number of simulation
+wdl = c(0,0,0) # win_draw_lose flag
+for (j in 1:N){
+  counter_1 = 0 # counter of the winning during the one round for player 1
+  counter_2 = 0 # counter of the winning during the one round for player 2
+  Player_1 = paste( sample(c("R","B"), size = 3, replace = T), collapse= '' ) # player 1  takes random cards
+  Player_2 = paste(sample(c("R","B"), size = 3, replace = T), collapse = '' ) # player 2  takes random cards
+  deck <- sample(c(rep("R", 26) , rep("B", 26))) # creating the deck and shuffle it
+  i =1 
+
+  while (i<=(n_cards-2)) { 
+    c = paste(deck[i:(i+2)],collapse='')
+    
+    if (all(Player_1 == c)) {
+      counter_1 = counter_1 + 1
+      i = i + 2  # jump
+    }
+    
+    if (all(Player_2 == c)) {
+      counter_2 = counter_2 + 1
+      i = i + 2 # jump
+    }
+    
+    i = i + 1
+  }
+  if (counter_1 > counter_2){wdl[1] = wdl[1] + 1 }
+  else if (counter_1 == counter_2){wdl[2] = wdl[2] + 1 }
+  else if (counter_1 < counter_2){wdl[3] = wdl[3] + 1 }
+}
+Percent = (wdl/N)*100
+data.frame(row.names = c("Player 1 win","Draw games","Player 2 win"),Percent)
+```
+When player 1 and player 2 picks their sequences completely at random after 1000 simulations we can see that the result is fair, because the percent of winning player 1 and player 2 close to each other.
+
+### 2 Weird Strategy
+```{r echo=FALSE}
+set.seed(123)
+
+n_cards = 52
+N = 1000
+wdl = c(0,0,0)
+for (j in 1:N){
+  counter_1 = 0
+  counter_2 = 0
+  Player_1 = "RRR"
+  Player_2 = "BRR"
+  deck <- sample(c(rep("R", 26) , rep("B", 26)))
+
+  i =1
+  flag = 0
+  while (i<=(n_cards-2)) {
+    c = paste(deck[i:(i+2)],collapse='')
+    
+    if (all(Player_1 == c)) {
+      counter_1 = counter_1 + 1
+      i = i + 2  # jump
+    }
+    
+    if (all(Player_2 == c)) {
+      counter_2 = counter_2 + 1
+      i = i + 2 # jump
+    }
+    
+    i = i + 1
+  }
+  if (counter_1 > counter_2){wdl[1] = wdl[1] + 1 }
+  else if (counter_1 == counter_2){wdl[2] = wdl[2] + 1 }
+  else if (counter_1 < counter_2){wdl[3] = wdl[3] + 1 }
+ }
+Percent  = (wdl/N)*100
+data.frame(row.names = c("Player 1 win","Draw","Player 2 win"),Percent)
+```
+At this point players one choose the sequence of "RRR" cards after that he showed the sequence to the player 2 then player 2 choose his sequence (with algorithm which was described in the HW1). After 1000 simulations we can see that player 2 almost all time is winning. If we look carefully we at the sequence of the player 1 we can see that his sequence is very unlikely, but obviously this amazing statistics of winning rate player 2 not only because sequence of player 1. Now lets understand what is "weird strategy" and why does it work: 
+
+- Player 1 choose his sequence and show it to the oponent.
+- Player 2 takes the middle card, change it to the opposite colour and chose this colour as his first card in this case $$R \rightarrow\bar B$$
+- Then player 2 takes first and second card of the player 1 and chooses this colours as second and third card consequently (in this case "R" - first, "R" - second and all sequence "BRR").
+
+And now we can understand rhy does it work: Player 1 has his sequence of card $$P1 = C_1C_2C_3$$
+
+Hence player 2 has $$P2 = \bar C_2C_1C_2$$
+
+To better explaining this strategy we need to think about the deck and how cards following one after one. For exaple lets imagine that last two card which was taken from the deck are $$...C_1C_2$$
+It is the right beginning and middle cards of the player 1 sequence but also it is middle and last cards for the player 2 which means that player 2 is one step forward then player 1. We can consider that player 2 more likely to win at this case because he has a chance to win at this step while player 1 need to wait for the next card from the deck to have a chance to win.
+
+##### Theory of the stratagy (why does player 2 take middle card?)
+If we look at the sequence of the player 2 $$\bar C_2C_1C_2$$
+We can see when player 2 always will have different card on the left and right sides.It has just two ways
+$$RC_1B$$
+or $$BC_1R$$
+
+We suppose that in this way player 2 tries to maintain the balance in the deck, in other words player, 2 tries to keep the same probability for red and black cards to be picked.
+
+### 3 General Situation
+Now we are going to show the result of 1000 simulations when Player 1, every game, change the sequence of his cards hence Player 2 change it too according his/her strategy.
+```{r echo=FALSE}
+# 3
+set.seed(123)
+
+change_char =  function(char) {
+  # The function switchs R to B and vice versa
+  mass = c("R","B")
+  i = match( char, mass )
+  i = i + (-1)^(i-1)
+  return (mass[i])
+}
+
+n_cards = 52
+N = 1000
+wdl = c(0,0,0)
+for (j in 1:N){
+  counter_1 = 0
+  counter_2 = 0
+  Player_1 =  sample(c("R","B"), size = 3, replace = T)
+  Player_2 = paste( c( c(change_char(Player_1[2])),(Player_1[1:2])), collapse='' )
+  Player_1 = paste( Player_1, collapse = "" )
+  deck <- sample(c(rep("R", 26) , rep("B", 26)))
+  i =1
+  flag = 0
+  while (i<=(n_cards-2)) {
+    c = paste(deck[i:(i+2)],collapse='')
+    
+    if (all(Player_1 == c)) {
+      counter_1 = counter_1 + 1
+      i = i + 2  # jump
+    }
+    
+    if (all(Player_2 == c)) {
+      counter_2 = counter_2 + 1
+      i = i + 2 # jump
+    }
+    
+    i = i + 1
+  }
+  if (counter_1 > counter_2){wdl[1] = wdl[1] + 1 }
+  else if (counter_1 == counter_2){wdl[2] = wdl[2] + 1 }
+  else if (counter_1 < counter_2){wdl[3] = wdl[3] + 1 }
+}
+Percent = (wdl/N)*100
+data.frame(row.names = c("Player 1 win","Draw","Player 2 win"),Percent)
+```
+
+# Exercise 2: Randomize this. . .
+### 1 
+Let's simulate the algoritm  1000 times and emphasize some interesting aspects 
+```{r echo=FALSE}
+set.seed(23123)
+N = 20
+n = 1000 # time steps
+d = 2000
+
+e = 0.1 # [0,1]эe 
+p = floor(log(n)/e^2)
+
+doub_check = 1 - exp(-(e**2)*p)
+suc_counter = 0
+
+for (n_ in 1:N){
+  Y = rep(0,p)
+  X = rep(0,d)
+  i = sample(c(1:d),replace = T,size = n)
+  L = matrix(rnorm(p*d,mean = 0, sd = 1/sqrt(p)),p,d)
+  
+  # Algorithm part
+  for (k in 1:n){
+    col_ind = i[k] # take the index of column
+    Y = Y + L[,col_ind] # add column of matrix L to the y
+  }
+  
+  # Verification part
+  for (k in 1:n){
+    col_ind = i[k]
+    X[col_ind] = X[col_ind] + 1 # frequency vector
+  }
+  
+  norm_X = sqrt(sum(X**2))
+  norm_Y = sqrt(sum(Y**2))
+  
+  print(abs(norm_X - norm_Y)/norm_Y)
+  
+  if ((((1-e)*norm_X) <= norm_Y) && (norm_Y <= (norm_X*(1+e)))){
+    suc_counter = suc_counter+1
+  }
+  
+}
+P = c(n, d, p, suc_counter/N,doub_check)
+data.frame(row.names = c("Size of input", "Size 'd' of vector 'x'" , "Size 'p' of vector 'y'", "Actual Probability", "JL lemma probability"),P)
+```
+
+We can see that if we are creating the matrix L(p x d) dimmensional every simulation we can achive the JL lemma results. 
+As we can see in the algoritm some parametr which we can tune: 
+
+- d - dimension of verctor X
+- epsilon
+- n - number of indexes
+- p - reduced dimension
+```{r echo=FALSE}
+e = seq(from = 0.1, to = 1, by = 0.01 )
+p = floor(log(n)/e^2)
+```
+```{r  echo=FALSE, fig.cap="A caption", out.width = '100%'}
+plot(e,p,xlab = "Epsilon", ylab = "Size of p", main = "Dependece of p from epsilon with fixed n = 1000")
+```
+
+Also we have to emphasize that dimension p count by the formul: $$log(n)/eps^2$$
+
+```{r echo=FALSE}
+e = seq(from = 0.001, to = 0.2, by = 0.005 )
+p = 1000
+prob = (1-exp((-e**2)*p))
+```
+```{r  echo=FALSE, fig.cap="A caption", out.width = '100%'}
+plot(e,prob,xlab = "Epsilon", ylab = "Probability", main = "Dependece of Probability from Epsilon with fixed p = 1000")
+
+```
+
+So we can see that we have just two main parametrs (we suppose that in real life we can't choose the dimension of vector X):
+
+- epsilon
+- n - number of indexes
+
+As we can impact on the JL probability with help of n and epsilon where n inpact on through the formula for p
+So lets try to tune n and epsilon for some really huge vector X:
+```{r echo=FALSE}
+set.seed(123)
+N = 1
+n = 2000 # time steps
+d = 10000
+e = 0.1 # [0,1]эe 
+p = floor(log(n)/e^2)
+P = 0
+doub_check = 1 - exp(-(e**2)*p)
+set.seed(1234)
+for (n_ in 1:N){
+  Y = rep(0,p) # create the vector y 
+  X = rep(0,d) # create the vector x to double check the result
+  i = sample(c(1:d),replace = T,size = n)
+  L = matrix(rnorm(p*d,mean = 0, sd = 1/sqrt(p)),p,d)
+  for (k in 1:n){
+    col_ind = i[k] # take the index of column
+    X[col_ind] = X[col_ind] + 1 # frequency vector
+    Y = Y + L[,col_ind] # add column of matrix L to the y
+  }
+  if ((1-e)*sqrt(sum(X**2))<=sqrt(sum(Y**2)) && sqrt(sum(Y**2))<=sqrt(sum(X**2))*(1+e)){
+    P = P+1
+  }
+}
+Parametrs = c(d,n,e,p,sqrt(sum(Y**2)),sqrt(sum(X**2)),P/N,doub_check)
+data.frame(row.names = c("d","n","Epsilon","p","||Y||","||X||","Actual Probability", "JL lemma probability"),Parametrs)
+```
+So we reduced the dimension from 1000000 to the 529.
+
+However, have we achived our goal? Taking into account the fact that we store L which is p x d size,it isn't efficient in terms of memory usage. Thus, we felt unsutisfaction with such large L, so we decided to reduce it suficiently. Since we just need vectors with components distributed as N(0, 1/p) we can utilize cells of L many time but in diffirent positions of vector components. For example, not only can we use columns but rows, diagonals and many different structures. Since, our teacher (Brutti) gave us very useful insight on the forum, we conclude that we can reuse cells in different ways by introducing a hash function that takes index and return unique indecies of matrix L. We don't need even matrix form of L and can treat it as vector. We reduced size of L up to 2 * p elements  
+
+```{r echo=FALSE}
+get_vector = function(seed_id, p, L){
+  # seed_id - is our input index from (i1, i2, ... in). 
+  # By setting index as a seed, we produce unique seqence of indecies of L of size p
+  set.seed(seed_id)
+  indecies = sample(1:length(L), p)
+  return(L[indecies])
+}
+
+main_seed = 13
+N_sim = 10
+n = 9000
+d = 200000
+eps = 0.1
+p = floor(log(n) / (eps^2))
+theor_prob = 1 - exp(-eps^2*p)
+
+# Generating L once with our main_seed which was found empirically
+set.seed(main_seed)
+L = rnorm(p * 2, mean = 0, sd = 1/sqrt(p))
+
+prob_counter = 0
+for(q in 1:N_sim){
+  y = rep(0, p) 
+  x = rep(0, d)
+  
+  # Generating input indecies using other seeds which doesn't match main_seed
+  set.seed(main_seed * q + q)
+  i = sample(1:d, n, replace = T)
+  
+  # Algorithm part. Computing "y"
+  for(k in 1:n){
+    current_index = i[k] 
+    y = y + get_vector(current_index, p, L)
+  }
+  
+  # Verification part. Computing "x"
+  for (k in 1:n){
+    current_index = i[k]
+    x[current_index] = x[current_index] + 1
+  }
+  
+  norm_X = sqrt(sum(x**2))
+  norm_Y = sqrt(sum(y**2))
+  
+  print(abs(norm_X - norm_Y) / norm_Y)
+  
+  if(((1-eps)*norm_X <= norm_Y) && (norm_Y <= ((1+eps) * norm_X))){
+    prob_counter = prob_counter + 1
+  }
+}
+
+
+Parametrs = c(d, n, eps, p, length(L), prob_counter / N_sim, theor_prob)
+print(data.frame(
+  row.names = c("d","n","Epsilon","p","Size of L","Actual Probability", "JL lemma probability"),
+  Parametrs))
+```
